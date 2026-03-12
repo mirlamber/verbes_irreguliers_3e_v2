@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application de Verbes Irréguliers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            margin-top: 50px;
+        }
+
+        .ceinture {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        #jaune { background-color: yellow; color: black; }
+        #orange { background-color: orange; }
+        #verte { background-color: green; }
+        #bleue { background-color: blue; }
+        #marron { background-color: brown; }
+        #noire { background-color: black; }
+        #noire30 { background-color:#222; }
+        #noire40 { background-color:#111; }
+        #noire70 { background-color:#000; border:2px solid gold; }
+
+        .active {
+            box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .tableau-zones {
+            display: flex;
+            flex-direction: column;
+            margin-top: 20px;
+        }
+
+        .row {
+            display: flex;
+            justify-content: center;
+            gap: 3px;
+            margin-bottom: 6px;
+        }
+
+        .zone,
+        .zone-header{
+            width:120px;
+        }
+
+        .zone{
+            padding:4px;
+            font-size:12px;
+            border:1px solid #ccc;
+            border-radius:4px;
+        }
+
+        .zone-header{
+            padding:4px;
+            font-size:12px;
+            font-weight:bold;
+            background-color:#ddd;
+            border:1px solid #ccc;
+            border-radius:4px;
+            text-align:center;
+        }
+
+        .tableau-zones{
+            max-height:75vh;
+            overflow-y:auto;
+        }
+
+        .ligne-ceintures{
+            display:flex;
+            justify-content:center;
+            gap:8px;
+            margin-bottom:6px;
+}
+    </style>
+</head>
+<body>
+    <div id="score" style="margin-top:15px; font-size:18px; font-weight:bold;"></div>
+
+    <div class="container">
+
+        <div class="ligne-ceintures">
+            <button id="jaune" class="ceinture" data-ceinture="jaune">Ceinture Jaune</button>
+            <button id="orange" class="ceinture" data-ceinture="orange">Ceinture Orange</button>
+            <button id="verte" class="ceinture" data-ceinture="verte">Ceinture Verte</button>
+            <button id="bleue" class="ceinture" data-ceinture="bleue">Ceinture Bleue</button>
+            <button id="marron" class="ceinture" data-ceinture="marron">Ceinture Marron</button>
+        </div>
+
+        <div class="ligne-ceintures">
+            <button id="noire" class="ceinture" data-ceinture="noire">Noire 1</button>
+            <button id="noire30" class="ceinture" data-ceinture="noire30">Noire 2</button>
+            <button id="noire40" class="ceinture" data-ceinture="noire40">Noire 3</button>
+            <button id="noire70" class="ceinture" data-ceinture="noire70">Noire 4</button>
+        </div>
+
+    </div>
+
+    <div class="actions">
+        <button id="lancer-test">Lancer le test</button>
+        <button id="correction">Correction</button>
+    </div>
+    
+    <div class="tableau-zones">
+
+        <div class="row header">
+            <div class="zone-header">Infinitif</div>
+            <div class="zone-header">Prétérit</div>
+            <div class="zone-header">Participe passé</div>
+            <div class="zone-header">Traduction</div>
+        </div>
+
+        <div id="tableau-zones"></div>
+
+    </div>
+
+    
+    <script>
+        const G1 = [
+            ["bet", "bet", "bet", "parier"],
+            ["burst", "burst", "burst", "éclater"],
+            ["cast", "cast", "cast", "jeter - lancer"],
+            ["cost", "cost", "cost", "coûter"],
+            ["cut", "cut", "cut", "couper"],
+            ["hit", "hit", "hit", "frapper"],
+            ["hurt", "hurt", "hurt", "blesser"],
+            ["let", "let", "let", "laisser"],
+            ["put", "put", "put", "mettre"],
+            ["read", "read", "read", "lire"],
+            ["set", "set", "set", "placer - fixer"],
+            ["shut", "shut", "shut", "fermer"],
+            ["spread", "spread", "spread", "étaler"],
+            ["upset", "upset", "upset", "bouleverser"]
+        ];
+
+        const G2 = [
+            ["begin", "began", "begun", "commencer"],
+            ["drink", "drank", "drunk", "boire"],
+            ["ring", "rang", "rung", "sonner"],
+            ["sing", "sang", "sung", "chanter"],
+            ["stink", "stank", "stunk", "puer"],
+            ["swim", "swam", "swum", "nager"],
+            ["become", "became", "become", "devenir"],
+            ["come", "came", "come", "venir"],
+            ["run", "ran", "run", "courir"]
+        ];
+
+        const G3 = [
+            ["bleed", "bled", "bled", "saigner"],
+            ["breed", "bred", "bred", "élever"],
+            ["feed", "fed", "fed", "nourrir"],
+            ["lead", "led", "led", "mener"],
+            ["meet", "met", "met", "rencontrer"],
+            ["shoot", "shot", "shot", "tirer"],
+            ["dig", "dug", "dug", "creuser"],
+            ["hang", "hung", "hung", "accrocher"],
+            ["stick", "stuck", "stuck", "coller"],
+            ["sting", "stung", "stung", "piquer"],
+            ["strike", "struck", "struck", "frapper"],
+            ["bring", "brought", "brought", "apporter"],
+            ["buy", "bought", "bought", "acheter"],
+            ["fight", "fought", "fought", "se battre"],
+            ["seek", "sought", "sought", "chercher"],
+            ["think", "thought", "thought", "penser"],
+            ["catch", "caught", "caught", "attraper"],
+            ["teach", "taught", "taught", "enseigner"]
+        ];
+
+        const G4 = [
+            ["bend", "bent", "bent", "plier - courber"],
+            ["build", "built", "built", "construire"],
+            ["lend", "lent", "lent", "prêter"],
+            ["send", "sent", "sent", "envoyer"],
+            ["spend", "spent", "spent", "passer - dépenser"],
+            ["burn", "burnt", "burnt", "brûler"],
+            ["dream", "dreamt", "dreamt", "rêver"],
+            ["deal", "dealt", "dealt", "distribuer"],
+            ["learn", "learnt", "learnt", "apprendre"],
+            ["mean", "meant", "meant", "signifier"],
+            ["spoil", "spoilt", "spoilt", "gâter - gâcher"],
+            ["creep", "crept", "crept", "ramper"],
+            ["feel", "felt", "felt", "sentir"],
+            ["keep", "kept", "kept", "garder"],
+            ["kneel", "knelt", "knelt", "s'agenouiller"],
+            ["sleep", "slept", "slept", "dormir"],
+            ["sweep", "swept", "swept", "balayer"],
+            ["weep", "wept", "wept", "pleurer"],
+            ["lay", "laid", "laid", "mettre - poser"],
+            ["say", "said", "said", "dire"],
+            ["sell", "sold", "sold", "vendre"],
+            ["tell", "told", "told", "dire - raconter"],
+            ["shine", "shone", "shone", "briller"],
+            ["win", "won", "won", "gagner"],
+            ["sit", "sat", "sat", "s'asseoir"],
+            ["spit", "spat", "spat", "cracher"],
+            ["smell", "smelt", "smelt", "sentir (odorat)"],
+            ["spell", "spelt", "spelt", "épeler"],
+            ["stand", "stood", "stood", "se tenir debout"],
+            ["understand", "understood", "understood", "comprendre"],
+            ["find", "found", "found", "trouver"],
+            ["get", "got", "got", "obtenir"],
+            ["have", "had", "had", "avoir"],
+            ["hear", "heard", "heard", "entendre"],
+            ["hold", "held", "held", "tenir"],
+            ["leave", "left", "left", "partir - quitter"],
+            ["light", "lit", "lit", "allumer"],
+            ["lose", "lost", "lost", "perdre"],
+            ["make", "made", "made", "faire - fabriquer"]
+        ];
+
+        const G5 = [
+            ["shake", "shook", "shaken", "secouer"],
+            ["take", "took", "taken", "prendre"],
+            ["bear", "bore", "born", "porter supporter"],
+            ["swear", "swore", "sworn", "jurer"],
+            ["tear", "tore", "torn", "déchirer"],
+            ["wear", "wore", "worn", "porter (vêtements)"],
+            ["blow", "blew", "blown", "souffler"],
+            ["draw", "drew", "drawn", "dessiner"],
+            ["fly", "flew", "flown", "voler"],
+            ["grow", "grew", "grown", "grandir - pousser"],
+            ["know", "knew", "known", "connaître - savoir"],
+            ["throw", "threw", "thrown", "jeter"],
+            ["awake", "awoke", "awaken", "se réveiller"],
+            ["break", "broke", "broken", "casser"],
+            ["choose", "chose", "chosen", "choisir"],
+            ["drive", "drove", "driven", "conduire"],
+            ["forget", "forgot", "forgotten", "oublier"],
+            ["freeze", "froze", "frozen", "geler"],
+            ["ride", "rode", "ridden", "monter (à vélo...)"],
+            ["rise", "rose", "risen", "s'élever - monter"],
+            ["speak", "spoke", "spoken", "parler"],
+            ["steal", "stole", "stolen", "voler - dérober"],
+            ["wake", "woke", "woken", "réveiller"],
+            ["write", "wrote", "written", "écrire"],
+            ["be", "was - were", "been", "être"],
+            ["beat", "beat", "beaten", "battre"],
+            ["bite", "bit", "bitten", "mordre"],
+            ["do", "did", "done", "faire"],
+            ["eat", "ate", "eaten", "manger"],
+            ["fall", "fell", "fallen", "tomber"],
+            ["forbid", "forbade", "forbidden", "interdire"],
+            ["forgive", "forgave", "forgiven", "pardonner"],
+            ["give", "gave", "given", "donner"],
+            ["go", "went", "gone", "aller"],
+            ["hide", "hid", "hidden", "se cacher"],
+            ["lie", "lay", "lain", "se coucher"],
+            ["see", "saw", "seen", "voir"],
+            ["show", "showed", "shown", "montrer"]
+        ];
+
+        const ceintureJaune = [...G1];
+
+        const ceintureOrange = [
+            ...G1,
+            ...G2,
+        ];
+
+        const ceintureVerte = [
+            ...G1,
+            ...G2,
+            ...G3,
+        ];
+
+        const ceintureBleue = [...G4];
+
+        const ceintureMarron = [...G5];
+
+        const ceintureNoire = [
+            ...G1,
+            ...G2,
+            ...G3,
+            ...G4,
+            ...G5
+        ];
+        let listeVerbes = [];
+        let selectedVerbs = []; // Tableau pour stocker les verbes sélectionnés
+        let nombreQuestions = 10;
+        
+        //activation désactivation du bouton correction
+        document.getElementById("correction").disabled = true;
+
+        // Remplir la liste de verbes basée sur la ceinture sélectionnée
+        document.querySelectorAll('.ceinture').forEach(button => {
+            button.addEventListener('click', function () {
+                // Supprimer l'effet "active" de tous les boutons
+                document.querySelectorAll('.ceinture').forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                const ceinture = this.getAttribute('data-ceinture');
+
+                // Choisir la liste appropriée selon la ceinture
+                switch (ceinture) {
+                    case 'jaune':
+                        listeVerbes = ceintureJaune;
+                        nombreQuestions = 10;
+                        break;
+
+                    case 'orange':
+                        listeVerbes = ceintureOrange;
+                        nombreQuestions = 10;
+                        break;
+
+                    case 'verte':
+                        listeVerbes = ceintureVerte;
+                        nombreQuestions = 20;
+                        break;
+
+                    case 'bleue':
+                        listeVerbes = ceintureBleue;
+                        nombreQuestions = 20;
+                        break;
+
+                    case 'marron':
+                        listeVerbes = ceintureMarron;
+                        nombreQuestions = 20;
+                        break;
+
+                    case 'noire':
+                        listeVerbes = ceintureNoire;
+                        nombreQuestions = 20;
+                        break;
+
+                    case 'noire30':
+                        listeVerbes = ceintureNoire;
+                        nombreQuestions = 30;
+                        break;
+
+                    case 'noire40':
+                        listeVerbes = ceintureNoire;
+                        nombreQuestions = 40;
+                        break;
+
+                    case 'noire70':
+                        listeVerbes = ceintureNoire;
+                        nombreQuestions = 70;
+                        break;
+                }
+                    
+
+                document.getElementById("lancer-test").disabled = false; // Activer le bouton de lancement du test
+            });
+        });
+
+        function genererLignes() {
+
+            const tableau = document.getElementById("tableau-zones");
+            tableau.innerHTML = "";
+
+            for (let i = 0; i < nombreQuestions; i++) {
+
+                const row = document.createElement("div");
+                row.className = "row";
+
+                const placeholders = [
+                    "Verbe infinitif",
+                    "Prétérit",
+                    "Participe passé",
+                    "Traduction"
+                ];
+
+                for (let j = 0; j < 4; j++) {
+                    const input = document.createElement("input");
+                    input.type = "text";
+                    input.className = "zone";
+                    input.placeholder = placeholders[j];
+                    row.appendChild(input);
+                }
+
+                tableau.appendChild(row);
+            }
+        }
+
+        function remplirCases() {
+            const rows = document.querySelectorAll('#tableau-zones .row');
+            selectedVerbs = [];
+
+            let availableVerbs = [...listeVerbes];
+
+            if (nombreQuestions > availableVerbs.length) {
+                console.error("Pas assez de verbes pour remplir toutes les lignes.");
+                return;
+            }
+
+            rows.forEach((row) => {
+                const inputs = row.querySelectorAll('.zone');
+
+                // 🔹 Réinitialiser toutes les cases non verrouillées
+                inputs.forEach(input => {
+                    if (!input.readOnly) {
+                        input.value = '';
+                        input.style.backgroundColor = '';
+                        input.style.color = 'black';
+                    }
+                });
+
+                // Tirer un verbe aléatoire
+                const randomIndex = Math.floor(Math.random() * availableVerbs.length);
+                const verb = availableVerbs[randomIndex];
+                availableVerbs.splice(randomIndex, 1);
+                selectedVerbs.push(verb);
+
+                // Choisir aléatoirement une case à remplir
+                let caseToFillIndex;
+                do {
+                    caseToFillIndex = Math.floor(Math.random() * 4);
+                } while (inputs[caseToFillIndex].readOnly); // éviter de remplir une case verrouillée
+
+                const caseToFill = inputs[caseToFillIndex];
+                if (caseToFill) {
+                    caseToFill.value = verb[caseToFillIndex];
+                    caseToFill.readOnly = true;
+                    caseToFill.style.backgroundColor = "#e0e0e0";
+                    caseToFill.style.fontWeight = "bold";
+                }
+            });
+        }
+
+
+
+
+
+
+
+        // Gérer le lancement du test
+        
+        document.getElementById('lancer-test').addEventListener('click', function () {
+            if (listeVerbes.length === 0) {
+                alert("Choisis d'abord une ceinture.");
+                // rien de plus à faire, le bouton reste actif
+                return;
+            }
+
+            // Si une ceinture est choisie, on lance le test
+            genererLignes();
+            remplirCases();
+
+            // Désactiver le bouton lancer-test
+            this.disabled = true;
+
+            // Activer le bouton correction
+            document.getElementById("correction").disabled = false;
+
+            // Désactiver les boutons de ceinture
+            document.querySelectorAll('.ceinture').forEach(btn => {
+                btn.disabled = true;
+                btn.classList.remove('active');
+            });
+        });
+
+
+
+        // Gérer la correction
+        document.getElementById('correction').addEventListener('click', function () {
+            const rows = document.querySelectorAll('#tableau-zones .row');
+            score = 0;
+
+            rows.forEach((row, index) => {
+                const inputs = row.querySelectorAll('.zone');
+                const correctVerb = selectedVerbs[index];
+
+                let ligneJuste = true;
+
+                inputs.forEach((input, i) => {
+                    if (input.readOnly) return; // ignore la case indice
+
+                    const reponseEleve = input.value.trim().toLowerCase(); // 🔹 tout en minuscules
+                    let reponseCorrecte;
+
+                    if (i === 3) {
+                        // Traductions multiples possibles
+                        reponseCorrecte = correctVerb[3]
+                            .toLowerCase()
+                            .split(/[(),\-]/)
+                            .map(r => r.trim())
+                            .filter(r => r !== "");
+
+                        if (reponseCorrecte.includes(reponseEleve)) {
+                            input.style.backgroundColor = "lightgreen";
+                        } else {
+                            input.style.backgroundColor = "lightcoral";
+                            input.value += ` (${correctVerb[3]})`;
+                            input.style.color = "red";
+                            ligneJuste = false;
+                        }
+
+                    } else {
+                        // Colonnes anglaises
+                        reponseCorrecte = correctVerb[i].toLowerCase();
+
+                        if (reponseEleve === reponseCorrecte) {
+                            input.style.backgroundColor = "lightgreen";
+                        } else {
+                            input.style.backgroundColor = "lightcoral";
+                            input.value += ` (${correctVerb[i]})`;
+                            input.style.color = "red";
+                            ligneJuste = false;
+                        }
+                    }
+                });
+
+                if (ligneJuste) score++;
+            });
+
+            // Afficher le score sur la page
+            const scoreDiv = document.getElementById("score");
+            scoreDiv.textContent = "Score : " + score + " / " + nombreQuestions;
+
+            // Couleur selon le score
+            if (score >= 8) scoreDiv.style.color = "green";
+            else if (score >= 5) scoreDiv.style.color = "orange";
+            else scoreDiv.style.color = "red";
+
+            // Bloquer le bouton correction après usage
+            document.getElementById("correction").disabled = true;
+
+            document.querySelectorAll('.zone').forEach(input => {
+                input.readOnly = true;
+
+                if (input.style.backgroundColor === "") {
+                    input.style.backgroundColor = "#f0f0f0";
+                }
+            });
+
+        });
+
+
+        
+
+    </script>
+</body>
+</html>
