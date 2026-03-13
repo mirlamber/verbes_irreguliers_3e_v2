@@ -517,7 +517,8 @@
 
             // Afficher le score sur la page
             const scoreDiv = document.getElementById("score");
-            scoreDiv.textContent = "Score : " + score + " / " + nombreQuestions;
+            const pourcentage = Math.round((score / nombreQuestions) * 100);
+            scoreDiv.textContent = "Score : " + score + " / " + nombreQuestions + " (" + pourcentage + "%)";
 
             // Couleur selon le score
             if (score >= 8) scoreDiv.style.color = "green";
